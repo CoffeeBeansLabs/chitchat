@@ -1,3 +1,4 @@
+import javax.persistence.Entity;
 import java.io.*;
 import java.net.Socket;
 
