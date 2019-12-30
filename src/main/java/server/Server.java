@@ -1,3 +1,5 @@
+package server;
+
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -11,10 +13,10 @@ public class Server {
 
         try {
             ServerSocket server = new ServerSocket(port);
-            System.out.println("Server started");
+            System.out.println("server.Server started");
             System.out.println("Waiting for a client ...");
             socket = server.accept();
-            System.out.println("Client accepted");
+            System.out.println("client.Client accepted");
             in = new DataInputStream(
                     new BufferedInputStream(socket.getInputStream()));
 

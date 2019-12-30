@@ -1,19 +1,20 @@
-import entities.Customer;
-import entities.CustomerStatus;
+import entity.Customer;
+import entity.CustomerStatus;
+import exception.UserAlreadyExistsException;
+import service.CustomerService;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
 public class CustomerCreation {
-    public static void main(String[] args) {
-        EntityManagerFactory factory = Persistence.createEntityManagerFactory("NewPersistenceUnit");
+    public static void main(String[] args) throws UserAlreadyExistsException {
+        EntityManagerFactory factory = Persistence.createEntityManagerFactory("PersistenceUnit");
         EntityManager entityManager = factory.createEntityManager();
-        entityManager.getTransaction().begin();
-
+        CustomerService customerService = new CustomerService(entityManager);
         Customer preeti = new Customer("Preeti", CustomerStatus.OFFLINE);
-        entityManager.persist(preeti);
-        entityManager.getTransaction().commit();
+        customerService.save(preeti);
+
         entityManager.close();
         factory.close();
     }
