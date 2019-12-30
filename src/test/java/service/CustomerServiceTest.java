@@ -12,16 +12,17 @@ import javax.persistence.Persistence;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CustomerServiceTest {
-    EntityManagerFactory entityManagerFactory;
-    EntityManager entityManager;
-    @BeforeEach
-    public void setup(){
+    private static EntityManagerFactory entityManagerFactory;
+    private static EntityManager entityManager;
+    @BeforeAll
+    public static void init(){
        entityManagerFactory = Persistence.createEntityManagerFactory("PersistenceUnitTest");
        entityManager = entityManagerFactory.createEntityManager();
     }
 
-    @AfterEach
-    public void tearDown(){
+    @AfterAll
+    public static void tearDown(){
+        entityManager.close();
         entityManagerFactory.close();
     }
 
