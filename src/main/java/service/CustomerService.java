@@ -4,6 +4,7 @@ import entity.Customer;
 import exception.UserAlreadyExistsException;
 
 import javax.persistence.EntityManager;
+import java.util.List;
 
 public class CustomerService {
 
@@ -23,10 +24,10 @@ public class CustomerService {
     }
 
     public boolean isExists(Customer customer) {
-        Customer foundCustomer = this.entityManager.find(Customer.class, customer.getId());
-        if(foundCustomer != null){
-            return true;
-        }
-        return false;
+        return this.entityManager.contains(customer);
+    }
+
+    public List<Customer> findAll() {
+        return this.entityManager.createQuery("Select c from Customer c", Customer.class).getResultList();
     }
 }

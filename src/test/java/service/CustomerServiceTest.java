@@ -12,12 +12,15 @@ import javax.persistence.Persistence;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CustomerServiceTest {
+    private static CustomerService customerService;
     private static EntityManagerFactory entityManagerFactory;
     private static EntityManager entityManager;
+
     @BeforeAll
-    public static void init(){
-       entityManagerFactory = Persistence.createEntityManagerFactory("PersistenceUnitTest");
-       entityManager = entityManagerFactory.createEntityManager();
+    public static void init() {
+        entityManagerFactory = Persistence.createEntityManagerFactory("PersistenceUnitTest");
+        entityManager = entityManagerFactory.createEntityManager();
+        customerService = new CustomerService(entityManager);
     }
 
     @AfterAll
@@ -28,7 +31,6 @@ class CustomerServiceTest {
 
     @Test
     public void isExists_shouldReturnTrue_whenGivenCustomerSavedInDatabase() throws UserAlreadyExistsException {
-        CustomerService customerService = new CustomerService(entityManager);
         Customer testUser = new Customer("testUser", CustomerStatus.OFFLINE);
         customerService.save(testUser);
 
@@ -36,8 +38,7 @@ class CustomerServiceTest {
     }
 
     @Test
-    public void isExists_shouldReturnFalse_whenGivenCustomerDoesNotSavedInDatabase(){
-        CustomerService customerService = new CustomerService(entityManager);
+    public void isExists_shouldReturnFalse_whenGivenCustomerDoesNotSavedInDatabase() {
         Customer testUser = new Customer("testUser", CustomerStatus.OFFLINE);
 
         assertFalse(customerService.isExists(testUser));
@@ -45,11 +46,27 @@ class CustomerServiceTest {
 
     @Test
     public void save_shouldReturnUserAlreadyExistsException_whenTryToSaveAlreadyExistsCustomer() throws UserAlreadyExistsException {
-        final CustomerService customerService = new CustomerService(entityManager);
         final Customer testUser2 = new Customer("testUser2", CustomerStatus.OFFLINE);
 
         customerService.save(testUser2);
         assertThrows(UserAlreadyExistsException.class, () -> customerService.save(testUser2));
-
     }
+
+    @Test
+    public void findAll_shouldReturnOneCustomer_whenDatabaseHasOneCustomerSaved() throws UserAlreadyExistsException {
+        Customer testUser = new Customer("testUser", CustomerStatus.OFFLINE);
+        customerService.save(testUser);
+        assertEquals(1, customerService.findAll().size());
+    }
+
+    @Test
+    public void findAll_shouldReturnTwoCustomers_whenDatabaseHasTwoCustomersSaved() throws UserAlreadyExistsException {
+        Customer testUser = new Customer("testUser", CustomerStatus.OFFLINE);
+        Customer testUser2 = new Customer("testUser2", CustomerStatus.ONLINE);
+        customerService.save(testUser);
+        customerService.save(testUser2);
+
+        assertEquals(2, customerService.findAll().size());
+    }
+
 }
