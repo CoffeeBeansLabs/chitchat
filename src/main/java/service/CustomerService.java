@@ -1,6 +1,7 @@
 package service;
 
 import entity.Customer;
+import entity.CustomerStatus;
 import exception.UserAlreadyExistsException;
 
 import javax.persistence.EntityManager;
@@ -29,5 +30,22 @@ public class CustomerService {
 
     public List<Customer> findAll() {
         return this.entityManager.createQuery("Select c from Customer c", Customer.class).getResultList();
+    }
+
+    public void updateStatus(int customerId, CustomerStatus status) {
+        Customer customer = this.find(customerId);
+        this.entityManager.getTransaction().begin();
+        customer.setStatus(status);
+        this.entityManager.getTransaction().commit();
+    }
+
+    public Customer find(int customerId) {
+        return this.entityManager.find( Customer.class, customerId);
+    }
+
+    public void deleteAll() {
+        this.entityManager.getTransaction().begin();
+        this.entityManager.createQuery("delete from Customer").executeUpdate();
+        this.entityManager.getTransaction().commit();
     }
 }

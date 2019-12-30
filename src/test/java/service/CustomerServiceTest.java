@@ -23,6 +23,11 @@ class CustomerServiceTest {
         customerService = new CustomerService(entityManager);
     }
 
+    @AfterEach
+    public void deleteAllRow(){
+        customerService.deleteAll();
+    }
+
     @AfterAll
     public static void tearDown(){
         entityManager.close();
@@ -67,6 +72,17 @@ class CustomerServiceTest {
         customerService.save(testUser2);
 
         assertEquals(2, customerService.findAll().size());
+    }
+
+    @Test
+    public void update_shouldChangeCustomerStatusToOnline_whenGivenCustomerIsOffline() throws UserAlreadyExistsException {
+        Customer testUser = new Customer("testUser", CustomerStatus.OFFLINE);
+        customerService.save(testUser);
+
+        customerService.updateStatus(testUser.getId(), CustomerStatus.ONLINE);
+        Customer updatedCustomer = customerService.find(testUser.getId());
+
+        assertEquals(CustomerStatus.ONLINE, updatedCustomer.getStatus());
     }
 
 }
