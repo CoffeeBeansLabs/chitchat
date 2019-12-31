@@ -2,7 +2,7 @@ package service;
 
 import entity.Customer;
 import entity.CustomerStatus;
-import exception.UserAlreadyExistsException;
+import exception.CustomerAlreadyExistsException;
 
 import javax.persistence.EntityManager;
 import java.util.List;
@@ -15,9 +15,9 @@ public class CustomerService {
         this.entityManager = entityManager;
     }
 
-    public void save(Customer customer) throws UserAlreadyExistsException {
+    public void save(Customer customer) throws CustomerAlreadyExistsException {
         if(isExists(customer)){
-            throw new UserAlreadyExistsException();
+            throw new CustomerAlreadyExistsException();
         }
         this.entityManager.getTransaction().begin();
         this.entityManager.persist(customer);

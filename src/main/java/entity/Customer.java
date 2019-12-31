@@ -10,6 +10,8 @@ public class Customer {
     private int id;
 
     private String name;
+
+    @Enumerated(EnumType.STRING)
     private CustomerStatus status;
 
     public Customer(String name, CustomerStatus status) {
@@ -52,5 +54,9 @@ public class Customer {
                 ", name='" + name + '\'' +
                 ", status=" + status +
                 '}';
+    }
+
+    public boolean isOffline() {
+        return this.status == CustomerStatus.OFFLINE;
     }
 }
