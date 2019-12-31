@@ -61,4 +61,10 @@ public class MessageService {
         query.setParameter("sender", sender);
         return query.getResultList();
     }
+
+    public List<Message> fetchAllMessages(Customer customer) throws CustomerNotExists {
+        List<Message> messages = this.fetchAllSentMessage(customer);
+        messages.addAll(fetchAllReceivedMessage(customer));
+        return messages;
+    }
 }

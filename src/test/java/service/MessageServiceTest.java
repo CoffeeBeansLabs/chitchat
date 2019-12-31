@@ -146,4 +146,32 @@ class MessageServiceTest {
         assertThrows(CustomerNotExists.class, () -> messageService.fetchAllSentMessage(sender));
     }
 
+    @Test
+    public void fetchAllMessages_shouldReturnEmptyList_whenThereIsNoMessagesOfGivenCustomer() throws CustomerNotExists, CustomerAlreadyExistsException {
+        Customer customer = new Customer("testUser1", CustomerStatus.ONLINE);
+        customerService.save(customer);
+
+        assertTrue(messageService.fetchAllMessages(customer).isEmpty());
+    }
+
+    @Test
+    public void fetchAllMessages_shouldReturListOfMessages_whenThereAreMessagesOfGivenCustomer() throws CustomerNotExists, CustomerAlreadyExistsException, SenderIsNotOnline {
+        Customer testUser1 = new Customer("testUser1", CustomerStatus.ONLINE);
+        Customer testUser2 = new Customer("testUser2", CustomerStatus.ONLINE);
+
+        Message sentMessage = new Message(testUser1, testUser2, "Hello", MessageStatus.UNREAD);
+        Message receivedMessage = new Message(testUser2, testUser1, "HI", MessageStatus.UNREAD);
+
+        customerService.save(testUser1);
+        customerService.save(testUser2);
+        messageService.save(sentMessage);
+        messageService.save(receivedMessage);
+
+        List<Message> messages = messageService.fetchAllMessages(testUser1);
+
+        assertEquals(2, messages.size());
+        assertTrue(messages.contains(sentMessage));
+        assertTrue(messages.contains(receivedMessage));
+    }
+
 }
