@@ -140,6 +140,24 @@ class MessageServiceTest {
     }
 
     @Test
+    public void fetchAllSentMessage_shouldReturnListOfSentMessageInSortingFormat_whenThereAreMessagesSentByCustomer() throws CustomerAlreadyExistsException, CustomerNotExists, SenderIsNotOnline {
+        Customer sender = new Customer("testUser1", CustomerStatus.ONLINE);
+        Customer receiver = new Customer("testUser2", CustomerStatus.ONLINE);
+        Message message1 = new Message(sender, receiver, "Hello", MessageStatus.UNREAD);
+        Message message2 = new Message(sender, receiver, "How are you?", MessageStatus.UNREAD);
+
+        customerService.save(sender);
+        customerService.save(receiver);
+        messageService.save(message1);
+        messageService.save(message2);
+
+        List<Message> receivedMessages = messageService.fetchAllSentMessage(sender);
+
+        assertEquals(message1, receivedMessages.get(0));
+        assertEquals(message2, receivedMessages.get(1));
+    }
+
+    @Test
     public void fetchAllSentMessage_shouldThrowCustomerNotExistException_whenGivenSenderDoesNotExistsInDatabase() throws CustomerAlreadyExistsException, CustomerNotExists, SenderIsNotOnline {
         Customer sender = new Customer("testUser1", CustomerStatus.ONLINE);
 
@@ -170,8 +188,8 @@ class MessageServiceTest {
         List<Message> messages = messageService.fetchAllMessages(testUser1);
 
         assertEquals(2, messages.size());
-        assertTrue(messages.contains(sentMessage));
-        assertTrue(messages.contains(receivedMessage));
+        assertEquals(sentMessage, messages.get(0));
+        assertEquals(receivedMessage, messages.get(1));
     }
 
 }
