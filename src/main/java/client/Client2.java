@@ -3,7 +3,7 @@ package client;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
-public class ClientSetup {
+public class Client2 {
     public static void main(String[] args) throws IOException {
         try{
             Client client = new Client("127.0.0.1", 5000);
