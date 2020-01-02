@@ -22,10 +22,8 @@ public class Client {
             Thread sendMessageThread = getSendMessageThread(userInput, outputStream);
             Thread readMessageThread = getReadMessageThread(inputStream);
 
-
             sendMessageThread.start();
             readMessageThread.start();
-
 
         } catch (IOException ioException) {
             System.out.println("The exception from socket output stream is: " + ioException.getMessage());

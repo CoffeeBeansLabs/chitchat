@@ -12,25 +12,10 @@ import java.util.stream.Collectors;
 
 public class Server {
     private static List<ClientHandler> clientHandlers = new ArrayList<>();
+    private final ServerSocket server;
 
     public Server(int port) throws IOException {
-        ServerSocket server = new ServerSocket(port);
-        int i = 1;
-        Socket socket;
-
-        while (true) {
-
-            socket = server.accept();
-            DataInputStream inputStream = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
-            DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
-
-            System.out.println("Assigning new thread for: client "+ i);
-            ClientHandler clientHandler = new ClientHandler(socket, "client " + i, inputStream, outputStream);
-            Thread thread = new Thread(clientHandler);
-            clientHandlers.add(clientHandler);
-            thread.start();
-            i++;
-        }
+        server = new ServerSocket(port);
     }
 
     public static ClientHandler getRecipientClient(String recipientName) {
@@ -39,5 +24,23 @@ public class Server {
             return filteredClientHandlers.get(0);
         }
         return null;
+    }
+
+    public void start() throws IOException {
+        int index = 1;
+        Socket socket;
+
+        while (true) {
+            socket = server.accept();
+            DataInputStream inputStream = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+            DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
+
+            System.out.println("Assigning new thread for: client "+ index);
+            ClientHandler clientHandler = new ClientHandler(socket, "client " + index, inputStream, outputStream);
+            Thread thread = new Thread(clientHandler);
+            clientHandlers.add(clientHandler);
+            thread.start();
+            index++;
+        }
     }
 }
