@@ -18,8 +18,8 @@ public class Server {
         server = new ServerSocket(port);
     }
 
-    public static ClientHandler getRecipientClient(String recipientName) {
-        List<ClientHandler> filteredClientHandlers = clientHandlers.stream().filter(clientHandler -> clientHandler.isSameClient(recipientName)).collect(Collectors.toList());
+    public static ClientHandler getClient(String name) {
+        List<ClientHandler> filteredClientHandlers = clientHandlers.stream().filter(clientHandler -> clientHandler.isSameClient(name)).collect(Collectors.toList());
         if(!filteredClientHandlers.isEmpty()){
             return filteredClientHandlers.get(0);
         }
@@ -27,7 +27,6 @@ public class Server {
     }
 
     public void start() throws IOException {
-        int index = 1;
         Socket socket;
 
         while (true) {
@@ -35,12 +34,22 @@ public class Server {
             DataInputStream inputStream = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
             DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
 
-            System.out.println("Assigning new thread for: client "+ index);
-            ClientHandler clientHandler = new ClientHandler(socket, "client " + index, inputStream, outputStream);
+            outputStream.writeUTF("Please type client name: ");
+            String clientName = inputStream.readUTF();
+            ClientHandler clientHandler = getClient(clientName);
+            if(clientHandler == null){
+
+                System.out.println("Assigning new thread for: client "+ clientName);
+                clientHandler = new ClientHandler(socket, "client " + clientName, inputStream, outputStream);
+                clientHandlers.add(clientHandler);
+            }else{
+                System.out.println("Logged in: client "+ clientHandler.getName());
+                socket = server.accept();
+                clientHandler.setSocket(socket);
+            }
+
             Thread thread = new Thread(clientHandler);
-            clientHandlers.add(clientHandler);
             thread.start();
-            index++;
         }
     }
 }

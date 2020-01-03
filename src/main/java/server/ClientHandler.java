@@ -8,7 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ClientHandler implements Runnable {
-    private final Socket socket;
+    private Socket socket;
     private boolean isLoggedIn;
     private String name;
     private final DataInputStream inputStream;
@@ -46,7 +46,7 @@ public class ClientHandler implements Runnable {
                 if (!messageWithRecipient.isEmpty()) {
                     String message = messageWithRecipient.get(0).trim();
                     String recipient = messageWithRecipient.get(1).trim();
-                    ClientHandler recipientClient = Server.getRecipientClient(recipient);
+                    ClientHandler recipientClient = Server.getClient(recipient);
                     if (recipientClient != null) {
                         this.writeMessage("Sent to: "+ recipientClient.name);
                         recipientClient.writeMessage("Received from "+ this.name + " : " + message);
@@ -73,6 +73,14 @@ public class ClientHandler implements Runnable {
     }
 
     public boolean isSameClient(String recipientName) {
-        return this.name.equals(recipientName) && this.isLoggedIn;
+        return this.name.equals(recipientName);
+    }
+
+    public void setSocket(Socket socket) {
+        this.socket = socket;
+    }
+
+    public String getName() {
+        return this.name;
     }
 }
