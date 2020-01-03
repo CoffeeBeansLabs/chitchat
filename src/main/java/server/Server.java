@@ -1,55 +1,74 @@
 package server;
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.ServerSocket;
+import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.net.SocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
+import java.util.Set;
 
 public class Server {
-    private static List<ClientHandler> clientHandlers = new ArrayList<>();
-    private final ServerSocket server;
+    private final ServerSocketChannel serverSocketChannel;
+    private final Selector selector;
 
     public Server(int port) throws IOException {
-        server = new ServerSocket(port);
+        selector = Selector.open();
+        serverSocketChannel = ServerSocketChannel.open();
+        serverSocketChannel.configureBlocking(false);
+        serverSocketChannel.bind(new InetSocketAddress(port));
     }
 
     public static ClientHandler getClient(String name) {
-        List<ClientHandler> filteredClientHandlers = clientHandlers.stream().filter(clientHandler -> clientHandler.isSameClient(name)).collect(Collectors.toList());
-        if(!filteredClientHandlers.isEmpty()){
-            return filteredClientHandlers.get(0);
-        }
         return null;
     }
 
     public void start() throws IOException {
-        Socket socket;
+        serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
 
         while (true) {
-            socket = server.accept();
-            DataInputStream inputStream = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
-            DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
-
-            outputStream.writeUTF("Please type client name: ");
-            String clientName = inputStream.readUTF();
-            ClientHandler clientHandler = getClient(clientName);
-            if(clientHandler == null){
-
-                System.out.println("Assigning new thread for: client "+ clientName);
-                clientHandler = new ClientHandler(socket, "client " + clientName, inputStream, outputStream);
-                clientHandlers.add(clientHandler);
-            }else{
-                System.out.println("Logged in: client "+ clientHandler.getName());
-                socket = server.accept();
-                clientHandler.setSocket(socket);
+            int numberOfReadyChannels = selector.select();
+            if (numberOfReadyChannels == 0) {
+                continue;
             }
 
-            Thread thread = new Thread(clientHandler);
-            thread.start();
+            Set<SelectionKey> readyChannelsKeys = selector.selectedKeys();
+            for (SelectionKey readyChannelKey : readyChannelsKeys) {
+                readyChannelsKeys.remove(readyChannelKey);
+                if (readyChannelKey.isAcceptable()) {
+                    ServerSocketChannel channelWithServer = (ServerSocketChannel) readyChannelKey.channel();
+                    SocketChannel client = channelWithServer.accept();
+                    client.configureBlocking(false);
+                    client.register(selector, SelectionKey.OP_READ);
+                    continue;
+                }
+                if (readyChannelKey.isReadable()) {
+                    SocketChannel client = (SocketChannel) readyChannelKey.channel();
+                    int BUFFER_SIZE = 1024;
+                    ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
+                    int numOfBytes = -1;
+                    numOfBytes = client.read(buffer);
+                    if (numOfBytes == -1) {
+                        Socket socket = client.socket();
+                        SocketAddress remoteSocketAddress = socket.getRemoteSocketAddress();
+                        System.out.println("Connection closed by client " + remoteSocketAddress);
+                        client.close();
+                        readyChannelKey.cancel();
+                        return;
+                    }
+
+                    System.out.println("Got message from client is: " + new String(buffer.array()));
+
+                }
+
+                if (readyChannelKey.isWritable()) {
+
+                }
+            }
+
         }
     }
 }
